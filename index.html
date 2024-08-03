@@ -1,11 +1,74 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Web App</title>
+  <title>Student Form</title>
+  <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
-    <iframe src="https://script.google.com/a/macros/pw.live/s/AKfycbxAb0E9qImBOY_LNQr7kLv7IxaEVu47xwF8iWadz3tsuZ42hw9g40uaJdN_2oxkBtWQ/exec" width="100%" height="600px" style="border:none;"></iframe>
+  <h1>Student Form</h1>
+  <form id="student-form" onsubmit="handleSubmit(event)">
+    <label for="date">Date:</label>
+    <input type="date" id="date" name="date" required>
+
+    <label for="time">Time:</label>
+    <input type="time" id="time" name="time" required>
+
+    <label for="branch-name">Branch:</label>
+    <select id="branch-name" name="branch-name" onchange="populateBatchNames()" required>
+      <option value="">Select Branch</option>
+    </select>
+
+    <label for="batch-name">Batch:</label>
+    <select id="batch-name" name="batch-name" onchange="populateGradeNames()" required>
+      <option value="">Select Batch</option>
+    </select>
+
+    <label for="grade">Grade:</label>
+    <select id="grade" name="grade" required>
+      <option value="">Select Grade</option>
+    </select>
+
+    <label for="teacher-name">Teacher:</label>
+    <select id="teacher-name" name="teacher-name" required>
+      <option value="">Select Teacher</option>
+    </select>
+
+    <label for="subject-name">Subject:</label>
+    <select id="subject-name" name="subject-name" onchange="populateChapterNames()" required>
+      <option value="">Select Subject</option>
+    </select>
+
+    <label for="chapter-name">Chapter:</label>
+    <select id="chapter-name" name="chapter-name" required>
+      <option value="">Select Chapter</option>
+    </select>
+
+    <label for="subtopic-name">Subtopic:</label>
+    <input type="text" id="subtopic-name" name="subtopic-name" required>
+
+    <table id="student-table" class="hidden">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Student Name</th>
+          <th>Present</th>
+          <th>Quiz Score</th>
+          <th>Assignment Grade</th>
+        </tr>
+      </thead>
+      <tbody id="student-table-body">
+        <!-- Rows will be populated dynamically -->
+      </tbody>
+    </table>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <div id="loader" class="loader hidden"></div>
+  <div id="success-message" class="success-message hidden"></div>
+
+  <div class="footer">© Made By Aditya Sing Rajput</div>
+
+  <script src="script.js"></script>
 </body>
 </html>
