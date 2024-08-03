@@ -1,5 +1,5 @@
 function doGet() {
-  return HtmlService.createHtmlOutputFromFile('Index'); // Renders the HTML file named "Index"
+  return HtmlService.createHtmlOutputFromFile('index'); // Renders the HTML file named "Index"
 }
 
 function submitData(formData) {
