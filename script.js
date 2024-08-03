@@ -1,143 +1,101 @@
-function doGet() {
-  return HtmlService.createHtmlOutputFromFile('index'); // Renders the HTML file named "Index"
+document.addEventListener('DOMContentLoaded', () => {
+  fetch('https://script.google.com/macros/s/AKfycby_YfAU2vvyo_zop3gWvNhwEMj8iQWG0SjoW4xskJM46C_lNuhl5QZSB4B5Rt1p4thC/exec?action=getDropDownData')
+    .then(response => response.json())
+    .then(data => {
+      console.log('Data from Google Sheets:', data);
+      populateForm(data);
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+function populateForm(data) {
+  // Populate dropdowns using data
+  const branchNameSelect = document.getElementById('branch-name');
+  const teacherNameSelect = document.getElementById('teacher-name');
+  const subjectNameSelect = document.getElementById('subject-name');
+
+  data.branches.forEach(branch => {
+    const option = document.createElement('option');
+    option.value = branch;
+    option.textContent = branch;
+    branchNameSelect.appendChild(option);
+  });
+
+  data.teachers.forEach(teacher => {
+    const option = document.createElement('option');
+    option.value = teacher;
+    option.textContent = teacher;
+    teacherNameSelect.appendChild(option);
+  });
+
+  data.subjects.forEach(subject => {
+    const option = document.createElement('option');
+    option.value = subject;
+    option.textContent = subject;
+    subjectNameSelect.appendChild(option);
+  });
 }
 
-function submitData(formData) {
-  try {
-    var sheet = SpreadsheetApp.openById('1-JBOTTfWizQnY4-JFXVPhCbFuWkcqutNMgd-L_NoFak').getSheetByName('AttendanceData');
-    var data = formData.students.map(student => [
-      new Date().toLocaleDateString(), 
-      new Date().toLocaleTimeString(),
-      formData.branch, 
-      formData.grade, 
-      formData.batch, 
-      formData.teacher, 
-      formData.subject, 
-      formData.classType, 
-      formData.chapter, 
-      formData.subTopic, 
-      student.name, 
-      student.attendance ? 'Present' : 'Absent', 
-      student.speedQuizScore, 
-      student.assignmentGrade || 'NULL'
-    ]);
-    Logger.log(data); // Log the data to ensure it's being processed correctly
-    if (data.length > 0) {
-      sheet.getRange(sheet.getLastRow() + 1, 1, data.length, data[0].length).setValues(data);
+function handleSubmit(event) {
+  event.preventDefault();
+  document.getElementById('loader').classList.remove('hidden');
+  const form = document.getElementById('student-form');
+  const formData = new FormData(form);
+  const studentData = [];
+
+  const studentNameElements = document.querySelectorAll('td:nth-child(2)');
+  const presentElements = document.querySelectorAll('input[name^="present-"]');
+  const quizScoreElements = document.querySelectorAll('input[name^="quiz-score-"]');
+  const assignmentGradeElements = document.querySelectorAll('select[name^="assignment-grade-"]');
+
+  studentNameElements.forEach((nameElement, i) => {
+    studentData.push({
+      studentName: nameElement.textContent,
+      present: presentElements[i].checked,
+      quizScore: quizScoreElements[i].value,
+      assignmentGrade: assignmentGradeElements[i].value
+    });
+  });
+
+  const formObj = {
+    date: formData.get('date'),
+    time: formData.get('time'),
+    branchName: formData.get('branch-name'),
+    batchName: formData.get('batch-name'),
+    grade: formData.get('grade'),
+    teacherName: formData.get('teacher-name'),
+    subjectName: formData.get('subject-name'),
+    chapterName: formData.get('chapter-name'),
+    subtopicName: formData.get('subtopic-name'),
+    studentData: studentData
+  };
+
+  fetch('https://script.google.com/macros/s/AKfycby_YfAU2vvyo_zop3gWvNhwEMj8iQWG0SjoW4xskJM46C_lNuhl5QZSB4B5Rt1p4thC/exec?action=submitData', {
+    method: 'POST',
+    body: JSON.stringify(formObj),
+    headers: {
+      'Content-Type': 'application/json'
     }
-    return 'Form Submitted Successfully';
-  } catch (e) {
-    Logger.log('Error: ' + e.message);
-    return 'Error: ' + e.message;
-  }
+  })
+  .then(response => response.json())
+  .then(responseData => {
+    handleResponse(responseData);
+  })
+  .catch(error => {
+    handleError(error);
+  });
 }
 
-function getDropDownData() {
-  var sheet = SpreadsheetApp.openById('1-JBOTTfWizQnY4-JFXVPhCbFuWkcqutNMgd-L_NoFak');
-  var branches = sheet.getSheetByName('Branches').getRange('A2:A').getValues().flat().filter(String);
-  var grades = [...new Set(sheet.getSheetByName('StudentDetails').getRange('B2:B').getValues().flat().filter(String))];
-  var batches = sheet.getSheetByName('Batches').getRange('B2:B').getValues().flat().filter(String);
-  var teachers = sheet.getSheetByName('Teachers').getRange('A2:A').getValues().flat().filter(String);
-  var subjects = sheet.getSheetByName('Subjects').getRange('A2:A').getValues().flat().filter(String);
-  var assignmentGrades = sheet.getSheetByName('Assignment Grades').getRange('A2:A').getValues().flat().filter(String);
-  
-  return {
-    branches: branches,
-    grades: grades,
-    batches: batches,
-    teachers: teachers,
-    subjects: subjects,
-    assignmentGrades: assignmentGrades
-  };
+function handleResponse(response) {
+  document.getElementById('loader').classList.add('hidden');
+  const successMessage = document.getElementById('success-message');
+  successMessage.textContent = `Form submitted successfully! Topper: ${response.topperName}, Present count: ${response.presentCount}`;
+  successMessage.classList.remove('hidden');
+  document.getElementById('student-form').reset();
+  document.getElementById('student-table').classList.add('hidden');
 }
 
-function getChapters(subject, grade) {
-  var sheet = SpreadsheetApp.openById('1-JBOTTfWizQnY4-JFXVPhCbFuWkcqutNMgd-L_NoFak').getSheetByName('Chapters');
-  var data = sheet.getDataRange().getValues();
-  var chapters = data.filter(row => row[0] == grade && row[1] == subject).map(row => row[2]);
-  return chapters;
-}
-
-function getStudents(batch) {
-  var sheet = SpreadsheetApp.openById('1-JBOTTfWizQnY4-JFXVPhCbFuWkcqutNMgd-L_NoFak').getSheetByName('StudentDetails');
-  var data = sheet.getDataRange().getValues();
-  var students = data.filter(row => row[3] == batch).map(row => ({
-    name: row[2],
-    attendance: true,
-    speedQuizScore: 0,
-    assignmentGrade: ''
-  }));
-  return students;
-}
-
-function getData() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Copy of Names');
-  const data = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues();
-  
-  const branchNames = [...new Set(data.map(row => row[15]))];
-  const teacherNames = [...new Set(data.map(row => row[14]))];
-  const subjects = [...new Set(data.map(row => row[11]))];
-
-  const students = data.map(row => ({
-    branchName: row[15],
-    batchName: row[16],
-    grade: row[4],
-    studentName: row[0]
-  }));
-
-  const chapterNames = data.map(row => ({
-    subjectName: row[11],
-    chapterName: row[12]
-  }));
-
-  return {
-    branchNames,
-    teacherNames,
-    subjects,
-    students,
-    chapterNames
-  };
-}
-
-function getChaptersBySubject(subjectName) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Copy of Names');
-  const data = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues();
-  
-  const chapters = [...new Set(data
-    .filter(row => row[11] === subjectName)
-    .map(row => row[12]))];
-  
-  return chapters;
-}
-
-function submitForm(form) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('FormResponses');
-  const lastRow = sheet.getLastRow();
-  const studentData = form.studentData;
-
-  const results = studentData.map(student => [
-    form.date,
-    form.time,
-    form.branchName,
-    form.batchName,
-    form.grade,
-    form.teacherName,
-    form.subjectName,
-    form.chapterName,
-    form.subtopicName,
-    student.studentName,
-    student.present ? 'Present' : 'Absent',
-    student.quizScore,
-    student.assignmentGrade
-  ]);
-
-  sheet.getRange(lastRow + 1, 1, results.length, results[0].length).setValues(results);
-
-  const topper = studentData.reduce((max, student) => (student.quizScore > max.quizScore ? student : max), { quizScore: -1 });
-  const presentCount = studentData.filter(student => student.present).length;
-
-  return {
-    topperName: topper.studentName,
-    presentCount
-  };
+function handleError(error) {
+  document.getElementById('loader').classList.add('hidden');
+  alert(`Error: ${error.message}`);
 }
