@@ -1,0 +1,100 @@
+/* styles.css */
+body {
+  background-color: #1a1a1a;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  text-align: center;
+}
+
+form {
+  display: inline-block;
+  width: 100%;
+  max-width: 600px;
+}
+
+label, select, input, button {
+  display: block;
+  margin: 10px auto;
+  width: 100%;
+  max-width: 400px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #333;
+  text-align: left;
+}
+
+button {
+  height: 50px;
+  width: 100%;
+  max-width: 200px;
+  background: #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-family: Consolas, Courier New, monospace;
+  border: solid #404c5d 1px;
+  font-size: 16px;
+  color: rgb(161, 161, 161);
+  transition: 500ms;
+  border-radius: 5px;
+  background: linear-gradient(145deg, #2e2d2d, #212121);
+  box-shadow: -1px -5px 15px #41465b, 5px 5px 15px #41465b,
+    inset 5px 5px 10px #212121, inset -5px -5px 10px #212121;
+}
+
+button:hover {
+  box-shadow: 1px 1px 13px #20232e, -1px -1px 13px #545b78;
+  color: #d6d6d6;
+  transition: 500ms;
+}
+
+button:active {
+  box-shadow: 1px 1px 13px #20232e, -1px -1px 33px #545b78;
+  color: #d6d6d6;
+  transition: 100ms;
+}
+
+.hidden {
+  display: none;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 16px;
+  color: #aaa;
+  padding: 10px 0;
+}
+
+.success-message {
+  color: #0f0;
+  font-size: 18px;
+  margin-top: 20px;
+}
+
+.loader {
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid #3498db;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+  margin: 20px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
